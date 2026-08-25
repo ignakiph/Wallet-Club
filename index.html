@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wallet Club - Mis Tarjetas de Fidelización</title>
+    <meta name="description" content="Lleva todas tus tarjetas de club, hoteles, aerolíneas y socios en tu móvil Android con códigos de barras y logotipos.">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CDN Libraries for Barcode & QR Code -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0B0F19;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-hover: rgba(51, 65, 85, 0.8);
+            --accent-primary: #6366F1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-emerald: #10B981;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --border-active: rgba(99, 102, 241, 0.5);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 90px;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 35%),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.12) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* --- Container --- */
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 4px 20px 4px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), #A855F7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .brand-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2.2;
+        }
+
+        .brand-text h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #FFFFFF, #CBD5E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.92);
+            background: rgba(51, 65, 85, 1);
+            color: var(--text-main);
+        }
+
+        /* --- Search & Category Controls --- */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border-radius: 14px;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        /* --- Categories Horizontal Scroll --- */
+        .categories-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-chip {
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cat-chip.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* --- Cards Stack / Grid --- */
+        .cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .wallet-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            border: 1px solid var(--border-glass);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .wallet-card:hover, .wallet-card:active {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 16px 30px -5px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .card-brand-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-logo-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .card-logo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .card-logo-fallback {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #0F172A;
+            text-transform: uppercase;
+        }
+
+        .card-title-group h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: -0.3px;
+        }
+
+        .card-title-group .card-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .card-fav-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card-fav-btn.is-fav {
+            color: #F59E0B;
+        }
+
+        .card-bottom {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .card-member-details .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2px;
+        }
+
+        .card-member-details .number {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 1.5px;
+        }
+
+        .card-member-details .holder-name {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .card-barcode-preview {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-barcode-preview svg {
+            height: 26px;
+            max-width: 90px;
+        }
+
+        /* --- Floating Action Button (FAB) --- */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), #8B5CF6);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 25px var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.25s ease;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .fab svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2.5;
+        }
+
+        /* --- Modals & Overlays --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-sheet {
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            background: #1E293B;
+            border-radius: 28px 28px 0 0;
+            border-top: 1px solid var(--border-glass);
+            padding: 24px;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* --- Presets Bar in Modal --- */
+        .presets-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .presets-grid {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+
+        .preset-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid var(--border-glass);
+            font-size: 0.85rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .preset-chip:hover, .preset-chip:active {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .preset-chip img {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            object-fit: contain;
+            background: white;
+            padding: 2px;
+        }
+
+        /* --- Form Styles --- */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .color-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .color-dot.selected {
+            border-color: #FFFFFF;
+            transform: scale(1.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), #8B5CF6);
+            color: white;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            margin-top: 10px;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Fullscreen Card Detail Modal --- */
+        .detail-modal {
+            text-align: center;
+        }
+
+        .detail-card-preview {
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+
+        .detail-brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: white;
+            padding: 6px;
+            object-fit: contain;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .detail-title h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .detail-title p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .barcode-container-box {
+            background: white;
+            padding: 18px 12px;
+            border-radius: 16px;
+            margin: 20px 0 16px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .barcode-container-box svg {
+            max-width: 100%;
+            height: 80px;
+        }
+
+        .qr-container-box {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .detail-number-display {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: 2px;
+            margin-top: 8px;
+            user-select: all;
+        }
+
+        .detail-actions-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .btn-action.danger {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #EF4444;
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            stroke: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            z-index: 200;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Wallet Club</h1>
+                    <p>Mis Tarjetas de Socio</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="btn-export" title="Exportar copia de seguridad">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </button>
+                <button class="icon-btn" id="btn-import" title="Importar copia de seguridad">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+                <input type="file" id="file-import" accept=".json" style="display: none;">
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-box">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="search-input" placeholder="Buscar tarjetas, aerolíneas, hoteles...">
+        </div>
+
+        <!-- Categories Scroll -->
+        <div class="categories-scroll" id="category-chips">
+            <button class="cat-chip active" data-cat="ALL">Todas</button>
+            <button class="cat-chip" data-cat="Hoteles">Hoteles</button>
+            <button class="cat-chip" data-cat="Aerolíneas">Aerolíneas</button>
+            <button class="cat-chip" data-cat="Transporte">Transporte</button>
+            <button class="cat-chip" data-cat="Supermercados">Supermercados</button>
+            <button class="cat-chip" data-cat="Compras">Compras</button>
+            <button class="cat-chip" data-cat="Ocio">Ocio</button>
+        </div>
+
+        <!-- Cards List Stack -->
+        <div class="cards-list" id="cards-container">
+            <!-- Dynamic cards will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="btn-add-card" title="Añadir Tarjeta">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+
+    <!-- Modal Form (Add / Edit Card) -->
+    <div class="modal-overlay" id="modal-form-overlay">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h3 id="modal-form-title">Añadir Tarjeta</h3>
+                <button class="close-btn" id="btn-close-form">&times;</button>
+            </div>
+
+            <!-- Presets Bar -->
+            <div class="presets-title">Seleccionar programa rápido (Preset)</div>
+            <div class="presets-grid" id="presets-container">
+                <!-- Preset chips rendered dynamically -->
+            </div>
+
+            <form id="card-form">
+                <input type="hidden" id="card-id">
+
+                <div class="form-group">
+                    <label for="input-name">Nombre de la Empresa / Club *</label>
+                    <input type="text" id="input-name" class="form-control" placeholder="Ej. Marriott Bonvoy, Iberia Plus..." required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-category">Categoría</label>
+                        <select id="input-category" class="form-control">
+                            <option value="Hoteles">Hoteles</option>
+                            <option value="Aerolíneas">Aerolíneas</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Supermercados">Supermercados</option>
+                            <option value="Compras">Compras</option>
+                            <option value="Ocio">Ocio</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-code-type">Tipo Código</label>
+                        <select id="input-code-type" class="form-control">
+                            <option value="CODE128">Código de Barras (CODE128)</option>
+                            <option value="EAN13">Código de Barras (EAN13)</option>
+                            <option value="QR">Código QR</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-number">Número de Socio / Código *</label>
+                    <input type="text" id="input-number" class="form-control" placeholder="Ej. 987654321" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-holder">Nombre del Titular / Nivel (Opcional)</label>
+                        <input type="text" id="input-holder" class="form-control" placeholder="Ej. Juan Pérez - Gold">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-domain">Dominio Web (Logotipo)</label>
+                        <input type="text" id="input-domain" class="form-control" placeholder="Ej. marriott.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Color de la Tarjeta</label>
+                    <div class="color-picker-group" id="color-picker-container">
+                        <div class="color-dot selected" style="background: linear-gradient(135deg, #8B1E3F, #1F1A24)" data-color="linear-gradient(135deg, #8B1E3F, #1F1A24)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #D71921, #800A10)" data-color="linear-gradient(135deg, #D71921, #800A10)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #004899, #002752)" data-color="linear-gradient(135deg, #004899, #002752)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #672870, #301036)" data-color="linear-gradient(135deg, #672870, #301036)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #10B981, #064E3B)" data-color="linear-gradient(135deg, #10B981, #064E3B)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #F59E0B, #78350F)" data-color="linear-gradient(135deg, #F59E0B, #78350F)"></div>
+                        <div class="color-dot" style="background: linear-gradient(135deg, #1E293B, #0F172A)" data-color="linear-gradient(135deg, #1E293B, #0F172A)"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btn-save-card">Guardar Tarjeta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Fullscreen Detail & Barcode View -->
+    <div class="modal-overlay" id="modal-detail-overlay">
+        <div class="modal-sheet detail-modal">
+            <div class="modal-header">
+                <h3>Detalle de Tarjeta</h3>
+                <button class="close-btn" id="btn-close-detail">&times;</button>
+            </div>
+
+            <div class="detail-card-preview" id="detail-card-preview">
+                <div class="detail-brand-header">
+                    <img id="detail-logo-img" class="detail-logo" src="" alt="Logo">
+                    <div class="detail-title">
+                        <h2 id="detail-card-name">Marca</h2>
+                        <p id="detail-card-cat">Categoría</p>
+                    </div>
+                </div>
+
+                <!-- Barcode or QR Box -->
+                <div class="barcode-container-box">
+                    <svg id="detail-barcode-svg"></svg>
+                    <div id="detail-qr-container" class="qr-container-box"></div>
+                    <div class="detail-number-display" id="detail-card-number">0000 0000 0000</div>
+                </div>
+
+                <div id="detail-holder-name" style="color: rgba(255,255,255,0.9); font-weight: 500;"></div>
+            </div>
+
+            <div class="detail-actions-row">
+                <button class="btn-action" id="btn-copy-num">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copiar Nº
+                </button>
+                <button class="btn-action" id="btn-edit-card">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Editar
+                </button>
+                <button class="btn-action danger" id="btn-delete-card">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Tarjeta guardada con éxito</div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DYNAMIC PWA MANIFEST CREATION ---
+        (function injectPWAManifest() {
+            const manifestObj = {
+                name: "Wallet Club - Mis Tarjetas",
+                short_name: "WalletClub",
+                description: "Tus tarjetas de socio, club y fidelización en tu bolsillo.",
+                start_url: "./index.html",
+                display: "standalone",
+                background_color: "#0B0F19",
+                theme_color: "#0F172A",
+                icons: [
+                    {
+                        src: "https://www.google.com/s2/favicons?domain=marriott.com&sz=192",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "https://www.google.com/s2/favicons?domain=marriott.com&sz=512",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ]
+            };
+            const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(blob);
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestUrl;
+            document.head.appendChild(link);
+        })();
+
+        // --- PRESETS DATA ---
+        const PRESETS = [
+            {
+                name: 'Marriott Bonvoy',
+                category: 'Hoteles',
+                domain: 'marriott.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #8B1E3F, #1F1A24)',
+                sampleNum: '948271039'
+            },
+            {
+                name: 'Iberia Plus',
+                category: 'Aerolíneas',
+                domain: 'iberia.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #D71921, #800A10)',
+                sampleNum: 'IB-59820149'
+            },
+            {
+                name: 'MeliáRewards',
+                category: 'Hoteles',
+                domain: 'melia.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #1C355E, #0B192E)',
+                sampleNum: '0098472910'
+            },
+            {
+                name: 'Más Renfe',
+                category: 'Transporte',
+                domain: 'renfe.com',
+                codeType: 'QR',
+                gradient: 'linear-gradient(135deg, #672870, #301036)',
+                sampleNum: 'RNF-8847102'
+            },
+            {
+                name: 'Club Carrefour',
+                category: 'Supermercados',
+                domain: 'carrefour.es',
+                codeType: 'EAN13',
+                gradient: 'linear-gradient(135deg, #004899, #002752)',
+                sampleNum: '2801234567895'
+            },
+            {
+                name: 'Air Europa SUMA',
+                category: 'Aerolíneas',
+                domain: 'aireuropa.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #0054A6, #002752)',
+                sampleNum: 'SUMA-4029102'
+            },
+            {
+                name: 'Hilton Honors',
+                category: 'Hoteles',
+                domain: 'hilton.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #002B49, #0A1118)',
+                sampleNum: 'HH-8930219'
+            },
+            {
+                name: 'IKEA Family',
+                category: 'Compras',
+                domain: 'ikea.com',
+                codeType: 'CODE128',
+                gradient: 'linear-gradient(135deg, #0051BA, #002752)',
+                sampleNum: '9982019482'
+            }
+        ];
+
+        // --- APP STATE ---
+        let cards = [];
+        let activeCategory = 'ALL';
+        let searchQuery = '';
+        let selectedColor = PRESETS[0].gradient;
+        let activeDetailCardId = null;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCardsFromStorage();
+            renderPresets();
+            renderCategoryChips();
+            renderCards();
+            setupEventListeners();
+        });
+
+        // --- LOCAL STORAGE ---
+        function loadCardsFromStorage() {
+            const saved = localStorage.getItem('wallet_club_cards_v1');
+            if (saved) {
+                try {
+                    cards = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading cards', e);
+                    cards = getDemoCards();
+                }
+            } else {
+                cards = getDemoCards();
+                saveCardsToStorage();
+            }
+        }
+
+        function saveCardsToStorage() {
+            localStorage.setItem('wallet_club_cards_v1', JSON.stringify(cards));
+        }
+
+        function getDemoCards() {
+            return [
+                {
+                    id: 'demo-1',
+                    name: 'Marriott Bonvoy',
+                    category: 'Hoteles',
+                    number: '948271039',
+                    holder: 'Titanium Elite',
+                    domain: 'marriott.com',
+                    codeType: 'CODE128',
+                    gradient: 'linear-gradient(135deg, #8B1E3F, #1F1A24)',
+                    isFav: true
+                },
+                {
+                    id: 'demo-2',
+                    name: 'Iberia Plus',
+                    category: 'Aerolíneas',
+                    number: 'IB-59820149',
+                    holder: 'Platino',
+                    domain: 'iberia.com',
+                    codeType: 'CODE128',
+                    gradient: 'linear-gradient(135deg, #D71921, #800A10)',
+                    isFav: true
+                },
+                {
+                    id: 'demo-3',
+                    name: 'Club Carrefour',
+                    category: 'Supermercados',
+                    number: '2801234567895',
+                    holder: 'Socio Oro',
+                    domain: 'carrefour.es',
+                    codeType: 'EAN13',
+                    gradient: 'linear-gradient(135deg, #004899, #002752)',
+                    isFav: false
+                }
+            ];
+        }
+
+        // --- LOGO URL GENERATOR ---
+        function getLogoUrl(domain, brandName) {
+            if (domain && domain.trim().length > 0) {
+                const cleanDomain = domain.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+                return `https://logo.clearbit.com/${cleanDomain}`;
+            }
+            return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(brandName.toLowerCase() + '.com')}&sz=128`;
+        }
+
+        // --- RENDERING PRESETS & CHIPS ---
+        function renderPresets() {
+            const container = document.getElementById('presets-container');
+            container.innerHTML = PRESETS.map((p, idx) => `
+                <div class="preset-chip" onclick="applyPreset(${idx})">
+                    <img src="${getLogoUrl(p.domain, p.name)}" onerror="this.src='https://www.google.com/s2/favicons?domain=${p.domain}&sz=64'" alt="${p.name}">
+                    <span>${p.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function applyPreset(idx) {
+            const p = PRESETS[idx];
+            document.getElementById('input-name').value = p.name;
+            document.getElementById('input-category').value = p.category;
+            document.getElementById('input-domain').value = p.domain;
+            document.getElementById('input-code-type').value = p.codeType;
+            if(!document.getElementById('input-number').value) {
+                document.getElementById('input-number').value = p.sampleNum;
+            }
+            selectColor(p.gradient);
+            showToast(`Preset "${p.name}" aplicado`);
+        }
+
+        function renderCategoryChips() {
+            const chips = document.querySelectorAll('.cat-chip');
+            chips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chips.forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    activeCategory = chip.dataset.cat;
+                    renderCards();
+                });
+            });
+        }
+
+        // --- RENDERING CARDS LIST ---
+        function renderCards() {
+            const container = document.getElementById('cards-container');
+            
+            let filtered = cards.filter(card => {
+                const matchCat = activeCategory === 'ALL' || card.category === activeCategory;
+                const matchSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    card.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    (card.holder && card.holder.toLowerCase().includes(searchQuery.toLowerCase()));
+                return matchCat && matchSearch;
+            });
+
+            // Sort: favorites first
+            filtered.sort((a, b) => (b.isFav ? 1 : 0) - (a.isFav ? 1 : 0));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="3"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        <h3>No se encontraron tarjetas</h3>
+                        <p>Añade tu primera tarjeta de socio pulsando el botón + abajo</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(card => {
+                const logoSrc = getLogoUrl(card.domain, card.name);
+                const initial = card.name.charAt(0).toUpperCase();
+
+                return `
+                    <div class="wallet-card" style="background: ${card.gradient || 'linear-gradient(135deg, #1E293B, #0F172A)'}" onclick="openDetailModal('${card.id}')">
+                        <div class="card-top">
+                            <div class="card-brand-info">
+                                <div class="card-logo-box">
+                                    <img src="${logoSrc}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" alt="${card.name}">
+                                    <span class="card-logo-fallback" style="display:none;">${initial}</span>
+                                </div>
+                                <div class="card-title-group">
+                                    <h2>${card.name}</h2>
+                                    <span class="card-category">${card.category || 'General'}</span>
+                                </div>
+                            </div>
+                            <button class="card-fav-btn ${card.isFav ? 'is-fav' : ''}" onclick="toggleFav(event, '${card.id}')">
+                                ${card.isFav ? '★' : '☆'}
+                            </button>
+                        </div>
+
+                        <div class="card-bottom">
+                            <div class="card-member-details">
+                                <div class="label">Nº DE SOCIO</div>
+                                <div class="number">${formatNumberDisplay(card.number)}</div>
+                                ${card.holder ? `<div class="holder-name">${card.holder}</div>` : ''}
+                            </div>
+
+                            <div class="card-barcode-preview">
+                                <svg id="mini-barcode-${card.id}"></svg>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render mini barcodes
+            filtered.forEach(card => {
+                if (card.codeType !== 'QR') {
+                    try {
+                        JsBarcode(`#mini-barcode-${card.id}`, card.number, {
+                            format: card.codeType || 'CODE128',
+                            displayValue: false,
+                            height: 24,
+                            margin: 0,
+                            width: 1.2
+                        });
+                    } catch (e) {
+                        JsBarcode(`#mini-barcode-${card.id}`, "12345678", { displayValue: false, height: 24, margin: 0 });
+                    }
+                } else {
+                    const el = document.getElementById(`mini-barcode-${card.id}`);
+                    if(el) el.style.display = 'none';
+                }
+            });
+        }
+
+        function formatNumberDisplay(num) {
+            if (!num) return '';
+            return num.replace(/(.{4})/g, '$1 ').trim();
+        }
+
+        function toggleFav(e, id) {
+            e.stopPropagation();
+            const card = cards.find(c => c.id === id);
+            if (card) {
+                card.isFav = !card.isFav;
+                saveCardsToStorage();
+                renderCards();
+            }
+        }
+
+        // --- FULLSCREEN DETAIL MODAL ---
+        function openDetailModal(id) {
+            activeDetailCardId = id;
+            const card = cards.find(c => c.id === id);
+            if (!card) return;
+
+            document.getElementById('detail-card-preview').style.background = card.gradient || 'linear-gradient(135deg, #1E293B, #0F172A)';
+            document.getElementById('detail-card-name').textContent = card.name;
+            document.getElementById('detail-card-cat').textContent = card.category;
+            document.getElementById('detail-card-number').textContent = card.number;
+            document.getElementById('detail-holder-name').textContent = card.holder || '';
+
+            const logoImg = document.getElementById('detail-logo-img');
+            logoImg.src = getLogoUrl(card.domain, card.name);
+            logoImg.onerror = () => { logoImg.src = `https://www.google.com/s2/favicons?domain=${card.domain || 'google.com'}&sz=128`; };
+
+            const barcodeSvg = document.getElementById('detail-barcode-svg');
+            const qrContainer = document.getElementById('detail-qr-container');
+            qrContainer.innerHTML = '';
+
+            if (card.codeType === 'QR') {
+                barcodeSvg.style.display = 'none';
+                qrContainer.style.display = 'flex';
+                new QRCode(qrContainer, {
+                    text: card.number,
+                    width: 160,
+                    height: 160,
+                    colorDark : "#0F172A",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } else {
+                barcodeSvg.style.display = 'block';
+                qrContainer.style.display = 'none';
+                try {
+                    JsBarcode("#detail-barcode-svg", card.number, {
+                        format: card.codeType || 'CODE128',
+                        displayValue: false,
+                        height: 75,
+                        margin: 5,
+                        width: 2
+                    });
+                } catch(e) {
+                    JsBarcode("#detail-barcode-svg", "12345678", { displayValue: false, height: 75 });
+                }
+            }
+
+            document.getElementById('modal-detail-overlay').classList.add('active');
+        }
+
+        // --- MODAL EVENT HANDLERS ---
+        function setupEventListeners() {
+            // Search
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderCards();
+            });
+
+            // Open Add Modal
+            document.getElementById('btn-add-card').addEventListener('click', () => {
+                openFormModal();
+            });
+
+            // Close Modals
+            document.getElementById('btn-close-form').addEventListener('click', closeFormModal);
+            document.getElementById('btn-close-detail').addEventListener('click', closeDetailModal);
+
+            document.getElementById('modal-form-overlay').addEventListener('click', (e) => {
+                if (e.target.id === 'modal-form-overlay') closeFormModal();
+            });
+            document.getElementById('modal-detail-overlay').addEventListener('click', (e) => {
+                if (e.target.id === 'modal-detail-overlay') closeDetailModal();
+            });
+
+            // Color picker
+            const dots = document.querySelectorAll('.color-dot');
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    dots.forEach(d => d.classList.remove('selected'));
+                    dot.classList.add('selected');
+                    selectedColor = dot.dataset.color;
+                });
+            });
+
+            // Form Submit
+            document.getElementById('card-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveCardForm();
+            });
+
+            // Copy Number
+            document.getElementById('btn-copy-num').addEventListener('click', () => {
+                const num = document.getElementById('detail-card-number').textContent;
+                navigator.clipboard.writeText(num);
+                showToast('Número de socio copiado');
+            });
+
+            // Edit Card
+            document.getElementById('btn-edit-card').addEventListener('click', () => {
+                closeDetailModal();
+                const card = cards.find(c => c.id === activeDetailCardId);
+                if (card) openFormModal(card);
+            });
+
+            // Delete Card
+            document.getElementById('btn-delete-card').addEventListener('click', () => {
+                if (confirm('¿Seguro que deseas eliminar esta tarjeta?')) {
+                    cards = cards.filter(c => c.id !== activeDetailCardId);
+                    saveCardsToStorage();
+                    closeDetailModal();
+                    renderCards();
+                    showToast('Tarjeta eliminada');
+                }
+            });
+
+            // Export JSON
+            document.getElementById('btn-export').addEventListener('click', exportBackup);
+
+            // Import JSON
+            document.getElementById('btn-import').addEventListener('click', () => {
+                document.getElementById('file-import').click();
+            });
+            document.getElementById('file-import').addEventListener('change', importBackup);
+        }
+
+        function selectColor(gradient) {
+            selectedColor = gradient;
+            const dots = document.querySelectorAll('.color-dot');
+            dots.forEach(d => {
+                if (d.dataset.color === gradient) d.classList.add('selected');
+                else d.classList.remove('selected');
+            });
+        }
+
+        function openFormModal(cardToEdit = null) {
+            const form = document.getElementById('card-form');
+            form.reset();
+
+            if (cardToEdit) {
+                document.getElementById('modal-form-title').textContent = 'Editar Tarjeta';
+                document.getElementById('card-id').value = cardToEdit.id;
+                document.getElementById('input-name').value = cardToEdit.name;
+                document.getElementById('input-category').value = cardToEdit.category;
+                document.getElementById('input-number').value = cardToEdit.number;
+                document.getElementById('input-holder').value = cardToEdit.holder || '';
+                document.getElementById('input-domain').value = cardToEdit.domain || '';
+                document.getElementById('input-code-type').value = cardToEdit.codeType || 'CODE128';
+                selectColor(cardToEdit.gradient || PRESETS[0].gradient);
+            } else {
+                document.getElementById('modal-form-title').textContent = 'Añadir Tarjeta';
+                document.getElementById('card-id').value = '';
+                selectColor(PRESETS[0].gradient);
+            }
+
+            document.getElementById('modal-form-overlay').classList.add('active');
+        }
+
+        function closeFormModal() {
+            document.getElementById('modal-form-overlay').classList.remove('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('modal-detail-overlay').classList.remove('active');
+            activeDetailCardId = null;
+        }
+
+        function saveCardForm() {
+            const id = document.getElementById('card-id').value;
+            const name = document.getElementById('input-name').value.trim();
+            const category = document.getElementById('input-category').value;
+            const number = document.getElementById('input-number').value.trim();
+            const holder = document.getElementById('input-holder').value.trim();
+            const domain = document.getElementById('input-domain').value.trim();
+            const codeType = document.getElementById('input-code-type').value;
+
+            if (id) {
+                // Update
+                const card = cards.find(c => c.id === id);
+                if (card) {
+                    card.name = name;
+                    card.category = category;
+                    card.number = number;
+                    card.holder = holder;
+                    card.domain = domain;
+                    card.codeType = codeType;
+                    card.gradient = selectedColor;
+                }
+            } else {
+                // Create
+                const newCard = {
+                    id: 'card-' + Date.now(),
+                    name,
+                    category,
+                    number,
+                    holder,
+                    domain,
+                    codeType,
+                    gradient: selectedColor,
+                    isFav: false
+                };
+                cards.unshift(newCard);
+            }
+
+            saveCardsToStorage();
+            closeFormModal();
+            renderCards();
+            showToast('Tarjeta guardada correctamente');
+        }
+
+        // --- BACKUP EXPORT & IMPORT ---
+        function exportBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `mis_tarjetas_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Copia de seguridad descargada');
+        }
+
+        function importBackup(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (Array.isArray(imported)) {
+                        cards = imported;
+                        saveCardsToStorage();
+                        renderCards();
+                        showToast('Tarjetas importadas con éxito');
+                    } else {
+                        alert('El archivo de respaldo no es válido.');
+                    }
+                } catch (err) {
+                    alert('Error al leer el archivo JSON.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- TOAST NOTIFICATION ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
